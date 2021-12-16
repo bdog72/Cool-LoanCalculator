@@ -1,89 +1,57 @@
 //
 //
+// Listen for submit
+document
+  .querySelector('#loan-form')
+  .addEventListener('submit', calculateResults);
 
-// Define UI variables
-const form = document.querySelector('#task-form');
-const taskList = document.querySelector('.collection');
+function calculateResults(e) {
+  // UI variables
+  const amount = document.querySelector('#amount');
+  const interest = document.querySelector('#interest');
+  const years = document.querySelector('#years');
 
-const clearBtn = document.querySelector('.clear-tasks');
-const filter = document.querySelector('#filter');
+  const monthlyPayment = document.querySelector('#monthly-payment');
+  const totalPayment = document.querySelector('#total-payment');
+  const totalInterest = document.querySelector('#total-interest');
 
-const taskInput = document.querySelector('#task');
+  const principal = parseFloat(amount.value);
+  const calculatedInterest = parseFloat(interest.value) / 100 / 12;
+  const calculatedPayments = parseFloat(years.value) * 12;
 
-// Call the function to load all event listeners
-loadEventListeners();
+  // Calculate payment
+  const x = Math.pow(1 + calculatedInterest, calculatedPayments);
+  const monthly = (principal * x * calculatedInterest) / (x - 1);
 
-// Load all event listeners function
-function loadEventListeners(params) {
-  // Add task event
-  form.addEventListener('submit', addTask);
-  // Remove task event
-  taskList.addEventListener('click', removeTask);
-  // Clear task event
-  clearBtn.addEventListener('click', clearTasks);
-  // Filter tasks event
-  filter.addEventListener('keyup', filterTasks);
-}
-
-// Add task function
-function addTask(event) {
-  event.preventDefault();
-
-  if (taskInput.value === '') {
-    alert('You must enter a task');
+  if (isFinite(monthly)) {
+    monthlyPayment.value = monthly.toFixed(2);
+    totalPayment.value = (monthly * calculatedPayments).toFixed(2);
+    totalInterest.value = (monthly * calculatedPayments - principal).toFixed(2);
+  } else {
+    showError('Please check your numbers');
   }
 
-  // Create li element
-  const li = document.createElement('li');
-  // Add class
-  li.className = 'collection-item';
-  // Create textnode and append to li
-  li.appendChild(document.createTextNode(taskInput.value));
-  // Create new link element
-  const link = document.createElement('a');
-  // Add class
-  link.className = 'delete-item secondary-content';
-  // Add icon html
-  link.innerHTML = `<i class="fa fa-remove"></i>`;
-  // Append link to li
-  li.appendChild(link);
-  // Append li to ul
-  taskList.appendChild(li);
-  // Clear input
-  taskInput.value = '';
-}
-
-// Remove task
-function removeTask(e) {
   e.preventDefault();
-  const bozo = e.target.parentElement;
-  if (bozo.classList.contains('delete-item')) {
-    if (confirm('Are you sure?')) {
-      bozo.parentElement.remove();
-    }
-  }
 }
 
-// Clear tasks
-function clearTasks() {
-  // taskList.innerHTML = '';
-  while (taskList.firstChild) {
-    taskList.removeChild(taskList.firstChild);
-  }
+// Show error
+function showError(error) {
+  // Create div
+  const errorDiv = document.createElement('div');
+  // Get elements
+  const card = document.querySelector('.card');
+  const heading = document.querySelector(' .heading');
+  // Add class
+  errorDiv.className = 'alert alert-danger';
+  // Create textnode and append to div
+  errorDiv.appendChild(document.createTextNode(error));
+  // Insert error above heading
+  card.insertBefore(errorDiv, heading);
+  // Clear error after 3 seconds
+  setTimeout(clearError, 3000);
 }
 
-// Filter tasks
-function filterTasks(e) {
-  const text = e.target.value.toLowerCase();
-  console.log(text);
-
-  document.querySelectorAll('.collection-item').forEach(function (task) {
-    const item = task.firstChild.textContent;
-
-    if (item.toLowerCase().indexOf(text) != -1) {
-      task.style.display = 'block';
-    } else {
-      task.style.display = 'none';
-    }
-  });
+// Clear error
+function clearError() {
+  document.querySelector('.alert').remove();
 }
